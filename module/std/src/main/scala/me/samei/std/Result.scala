@@ -1,11 +1,7 @@
 package me.samei.std
 
-import scala.util.{Try, Failure, Success}
+import scala.util.{Try, Success}
 import scala.util.control.NonFatal
-
-/**
-  * Created by reza on 8/3/17.
-  */
 
 sealed trait Result[+Err, +Val]
 

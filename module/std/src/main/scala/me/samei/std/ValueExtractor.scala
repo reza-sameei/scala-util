@@ -1,9 +1,5 @@
 package me.samei.std
 
-/**
-  * Created by reza on 8/3/17.
-  */
-
 trait ValueExtractor {
 
     def required[T](key: String)(
@@ -44,15 +40,11 @@ trait ValueExtractor {
 
 }
 
-trait ArgumentExtractor extends ValueExtractor {
-    def firstOption[T](
-        implicit convertor: Convertor[String, T]
-    ): ValueExtractor.Result[Option[T]]
-}
-
 object ValueExtractor {
 
     type Result[T] = me.samei.std.Result[Error, T]
+
+    type Extractor[T] = ValueExtractor => Result[T]
 
     sealed trait Error {
         def key: String
@@ -100,7 +92,7 @@ object ValueExtractor {
 
         def required[T](
             ns: String,
-            fn: ValueExtractor => Result[T]
+            fn: Extractor[T]
         )(
             implicit context: ValueExtractor
         ): Result[T] = context required (ns, fn)
@@ -113,7 +105,7 @@ object ValueExtractor {
 
         def optional[T](
             ns: String,
-            fn: ValueExtractor => Result[T]
+            fn: Extractor[T]
         )(
             implicit context: ValueExtractor
         ): Result[Option[T]] = context optional (ns, fn)
@@ -126,7 +118,7 @@ object ValueExtractor {
 
         def nelist[T](
             ns: String,
-            fn: ValueExtractor => Result[T]
+            fn: Extractor[T]
         )(
             implicit context: ValueExtractor
         ): Result[List[T]] = context nelist (ns, fn)
@@ -139,16 +131,10 @@ object ValueExtractor {
 
         def list[T](
             ns: String,
-            fn: ValueExtractor => Result[T]
+            fn: Extractor[T]
         )(
             implicit context: ValueExtractor
         ): Result[List[T]] = context list (ns, fn)
-
-        def firstOption[T](
-            implicit
-            convertor: Convertor[String, T],
-            context: ArgumentExtractor
-        ): Result[Option[T]] = context firstOption
 
     }
 

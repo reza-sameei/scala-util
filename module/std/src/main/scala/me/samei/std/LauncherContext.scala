@@ -1,18 +1,17 @@
 package me.samei.std
 
-import me.samei.std
-
 import scala.concurrent.ExecutionContext
+import com.typesafe.scalalogging.Logger
 
 trait LauncherContext extends Module { self =>
 
-    override def logger: me.samei.std.pre.Logger
+    override def logger: Logger
 
     def extractor: ValueExtractor
 
     def executionContext: ExecutionContext
 
-    final protected def flat() = new std.LauncherContext.Flat(self)
+    final protected def flat() = new LauncherContext.Flat(self)
 }
 
 object LauncherContext {

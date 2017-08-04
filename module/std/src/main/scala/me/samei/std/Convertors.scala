@@ -3,10 +3,6 @@ package me.samei.std
 import scala.reflect.ClassTag
 import scala.concurrent.duration._
 
-/**
-  * Created by reza on 8/3/17.
-  */
-
 trait Convertors {
 
     def default[T:ClassTag] = {
@@ -28,23 +24,6 @@ trait Convertors {
         case "true" | "on" => true
         case "false" | "off" => false
     })
-
-    implicit val std$convertor$string2path = Convertor[String, Path.Type]("String => Path"){ raw =>
-        java.nio.file.Paths.get(raw)
-    }
-
-    implicit val std$convertor$string2pathabsolute = Convertor[String, Path.Absolute]("String => Path.Absolute") { raw =>
-        val path = java.nio.file.Paths.get(raw)
-        if (path.isAbsolute) Path.Absolute(path)
-        else throw new IllegalArgumentException(s"The path isn't absolute: ${path}")
-    }
-
-    implicit val std$convertor$string2pathreadablefile = Convertor[String, Path.ReadableFile]("String => Path.Absolute") { raw =>
-        val path = java.nio.file.Paths.get(raw)
-        val file = path.toFile
-        if (file.isFile && file.canRead) Path.ReadableFile(path)
-        else throw new IllegalArgumentException(s"The path don't refer to a file/readable-file: ${path}")
-    }
 
     implicit val std$convertor$string2finiteduration = Convertor[String,FiniteDuration]("String => FiniteDuration")(i => Duration(i).asInstanceOf[FiniteDuration])
 

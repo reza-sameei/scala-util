@@ -1,6 +1,4 @@
 
-version := "1.0.0-SNAPSHOT"
-
 libraryDependencies ++= Seq(
     "com.typesafe.scala-logging" %% "scala-logging" % "3.7.2"
     // ,   "com.typesafe" % "config" % "1.3.0"

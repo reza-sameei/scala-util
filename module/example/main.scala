@@ -1,25 +1,6 @@
-# std
-Utilities for Scala
-
-### Import
-Currently you need to clone the project and publish it locally on your target:
-
-```
-sbt "+ publish-local"
-```
-
-Then:
-
-```
-libraryDependencies += "me.samei" %% "std" % "1.0.0-SNAPSHOT"
-```
-
-### CliLauncher & Task
-```scala
 package com.example
 
-import me.samei.std._
-import Convertors._
+import me.samei.std.Convertors._
 import me.samei.cli.{Task, CliLauncher}
 
 class Hello(name: String) extends Task {
@@ -42,11 +23,3 @@ class Hello(name: String) extends Task {
 
 
 object Main extends CliLauncher("main", new Hello("say-hello") :: Nil)
-
-```
-
-### Result & AsyncResult
-
-### ValueExtractor
-
-### Convertor

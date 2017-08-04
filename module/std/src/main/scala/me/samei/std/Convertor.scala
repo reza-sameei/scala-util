@@ -1,9 +1,5 @@
 package me.samei.std
 
-/**
-  * Created by reza on 8/3/17.
-  */
-
 trait Convertor[I,O] {
 
     def title: String

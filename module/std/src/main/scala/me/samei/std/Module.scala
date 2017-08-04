@@ -1,10 +1,6 @@
 package me.samei.std
 
-import pre.Logger
-
-/**
-  * Created by reza on 8/3/17.
-  */
+import com.typesafe.scalalogging.Logger
 
 trait Module {
 

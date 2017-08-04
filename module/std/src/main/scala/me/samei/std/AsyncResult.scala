@@ -3,11 +3,6 @@ package me.samei.std
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.util.control.NonFatal
-import scala.util.{Failure, Success, Try}
-
-/**
-  * Created by reza on 8/3/17.
-  */
 
 case class AsyncResult[+Err, +Val](
     underlay: Future[Result[Err, Val]]

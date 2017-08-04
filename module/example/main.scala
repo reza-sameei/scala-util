@@ -22,4 +22,7 @@ class Hello(name: String) extends Task {
 }
 
 
-object Main extends CliLauncher("main", new Hello("say-hello") :: Nil)
+object Main extends CliLauncher(
+    "main",
+    new Hello("say-hello") :: new Hello("say-hello") :: Nil
+)

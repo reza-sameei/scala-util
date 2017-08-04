@@ -15,15 +15,15 @@ object AsyncResult {
     def error[E,V](error: E): AsyncResult[E,V] = async(Result.Error(error))
     def failure[E,V](cause: Throwable): AsyncResult[E,V] = async(Result.Failure(cause))
 
-    def lazyAsync[E,V](rsl: => Result[E,V]): AsyncResult[E,V] = AsyncResult(scala.concurrent.Future.successful(rsl))
-    def lazyValue[E,V](value: => V): AsyncResult[E,V] = lazyAsync(Result.Value(value))
-    def lazyError[E,V](error: => E): AsyncResult[E,V] = lazyAsync(Result.Error(error))
-    def lazyFailure[E,V](cause: => Throwable): AsyncResult[E,V] = lazyAsync(Result.Failure(cause))
-
     def lazyApply[E,V](fn: => Future[Result[E,V]]): AsyncResult[E,V] =
         try apply(fn) catch {
             case cause: Throwable => failure(cause)
         }
+
+    def lazyAsync[E,V](rsl: => Result[E,V]): AsyncResult[E,V] = lazyApply(scala.concurrent.Future.successful(rsl))
+    def lazyValue[E,V](value: => V): AsyncResult[E,V] = lazyAsync(Result.Value(value))
+    def lazyError[E,V](error: => E): AsyncResult[E,V] = lazyAsync(Result.Error(error))
+    def lazyFailure[E,V](cause: => Throwable): AsyncResult[E,V] = lazyAsync(Result.Failure(cause))
 
     implicit class Operations[E,V](val self: AsyncResult[E,V]) extends AnyVal {
 

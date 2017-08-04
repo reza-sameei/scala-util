@@ -56,18 +56,41 @@ object CliLauncher {
         val tasks: Seq[Task]
     ) extends LauncherContext with Module {
 
-        override def logger = loadLogger
+        override val logger = loadLogger
 
-        val index = tasks.map(i => i.props.key -> i).toMap
+        logger.info("Init")
 
-        private[CliLauncher] def pickTask (
-            args: ArgumentExtractor, tasks: Seq[Task]
+        private def indexTasks(
+            tasks: Seq[Task]
+        ): AsyncResult[Task.Result.Unsuccessful, Map[String, Task]] = AsyncResult lazyAsync {
+            val buf = scala.collection.mutable.HashMap.empty[String, Task]
+            val duplicated = scala.collection.mutable.ListBuffer.empty[(Task,Task)]
+            val index = tasks.foldLeft(buf){ (buf, i) =>
+                val props = i.props
+                if (buf contains props.key) {
+                    val first = buf(props.key)
+                    duplicated append ((first, i))
+                    logger.error(s"Init, Duplicated Task Key: ${props.key}, ${first}, ${i}")
+                    buf
+                } else {
+                    logger.debug(s"Init, Add Task, ${props}, ${i}")
+                    buf(props.key) = i
+                    buf
+                }
+            }.toMap
+            if (duplicated.nonEmpty) {
+                throw new RuntimeException(s"Duplicated Task Keys:\n${duplicated.mkString("\n")}")
+            } else Result value index
+        }
+
+        private def pickTask (
+            args: ArgumentExtractor, tasks: Map[String, Task]
         ): AsyncResult[Task.Result.Unsuccessful, Task] = AsyncResult async {
             args.firstOption[String] errorTransform { err =>
                 Result error Task.Result.usageError(s"Error in task name: ${err.desc}")
             } flatMap {
-                case Some(name) if index contains name =>
-                    Result value index(name)
+                case Some(name) if tasks contains name =>
+                    Result value tasks(name)
                 case Some(name) =>
                     Result error Task.Result.usageError(s"Undefined Task: ${name}")
                 case None =>
@@ -76,7 +99,7 @@ object CliLauncher {
         }
 
 
-        private[CliLauncher] def extractTaskArgs (
+        private def extractTaskArgs (
             args: ArgumentExtractor,
             task: Task
         ): AsyncResult[Task.Result.Unsuccessful, Any] = AsyncResult async {
@@ -86,7 +109,7 @@ object CliLauncher {
             }
         }
 
-        private[CliLauncher] def runTask (
+        private def runTask (
             ctx: LauncherContext.Flat,
             task: Task,
             args: Any
@@ -98,18 +121,14 @@ object CliLauncher {
                 }
             }
 
-        private[CliLauncher] def exit (code: Int) = {
+        private def exit (code: Int) = {
             sys.runtime.halt(code)
             ??? // Never
         }
 
-        private def info(str: String): Unit = {
-            logger.info(str)
-            println(str)
-        }
-
         def result(): AsyncResult[Task.Result.Unsuccessful, Task.Result.Successful] = for {
-            task <- pickTask(extractor, tasks)
+            index <- indexTasks(tasks)
+            task <- pickTask(extractor, index)
             args <- extractTaskArgs(extractor, task)
             rsl <- runTask(flat, task, args)
         } yield rsl
@@ -123,7 +142,9 @@ object CliLauncher {
                 println(message)
                 exit(code)
             case Result.Failure(cause) =>
-                logger.error("Failure", cause)
+                val msg = s"Failure: ${cause.getMessage}"
+                logger.error(msg, cause)
+                println(msg)
                 cause.printStackTrace()
                 exit(Task.Result.Error)
         }

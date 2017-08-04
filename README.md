@@ -11,7 +11,7 @@ sbt "+ publish-local"
 Then:
 
 ```
-libraryDependencies += "me.samei" %% "std" % "1.0.0-SNAPSHOT"
+libraryDependencies += "me.samei" %% "scala-util" % "1.0.0-SNAPSHOT"
 ```
 
 ### CliLauncher & Task
@@ -20,7 +20,7 @@ package com.example
 
 import me.samei.std._
 import Convertors._
-import me.samei.cli.{Task, CliLauncher}
+import me.samei.cli._
 
 class Hello(name: String) extends Task {
 
@@ -44,6 +44,18 @@ class Hello(name: String) extends Task {
 object Main extends CliLauncher("main", new Hello("say-hello") :: Nil)
 
 ```
+You can call your tasks:
+```
+sbt> run say-hello
+[info] Undefined key: 'name'
+
+sbt> run say-hello -name
+[info] Missed value for key: 'name'
+
+sbt> run say-hello -name Reza
+[info] Hello Reza!
+```
+
 
 ### Result & AsyncResult
 

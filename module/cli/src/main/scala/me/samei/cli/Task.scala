@@ -97,5 +97,9 @@ trait Task extends Task.Syntax {
 
     protected implicit def syntax$taskresult$to$future(rsl: Task.Result): Future[Task.Result] = Future successful rsl
     protected def func(fn: => Fn): Fn = fn
+    override def toString(): String = {
+        val ref = super.toString.replace(getClass.getName, "")
+        s"${getClass.getName}(${props},${ref})"
+    }
 }
 

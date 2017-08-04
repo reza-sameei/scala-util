@@ -60,6 +60,12 @@ object CliLauncher {
 
         logger.info("Init")
 
+        private class DuplicatedTaskKey(
+            val tasks: Seq[(Task, Task)]
+        ) extends RuntimeException(
+            s"Duplicated Task Keys: ${tasks.mkString(",")}"
+        )
+
         private def indexTasks(
             tasks: Seq[Task]
         ): AsyncResult[Task.Result.Unsuccessful, Map[String, Task]] = AsyncResult lazyAsync {
@@ -78,9 +84,8 @@ object CliLauncher {
                     buf
                 }
             }.toMap
-            if (duplicated.nonEmpty) {
-                throw new RuntimeException(s"Duplicated Task Keys:\n${duplicated.mkString("\n")}")
-            } else Result value index
+            if (duplicated.nonEmpty) throw new DuplicatedTaskKey(duplicated)
+            else Result value index
         }
 
         private def pickTask (
@@ -141,6 +146,20 @@ object CliLauncher {
                 logger.error(s"Error: ${message}", cause)
                 println(message)
                 exit(code)
+            case Result.Failure(cause: DuplicatedTaskKey) =>
+                val buf = new StringBuilder("Failure: Duplicated Task Keys!")
+                val msg = cause.tasks.foldLeft(buf) { (buf,i) =>
+                    val (first, second) = i
+                    buf append s"""
+                           |  - ${first.props.key}
+                           |    - ${first}
+                           |    - ${second}
+                         """.stripMargin
+                    buf
+                }.toString
+                logger.error(msg)
+                println(msg)
+                exit(Task.Result.Error)
             case Result.Failure(cause) =>
                 val msg = s"Failure: ${cause.getMessage}"
                 logger.error(msg, cause)
